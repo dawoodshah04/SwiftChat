@@ -1,15 +1,20 @@
 import express from 'express';
 import dotenv from 'dotenv/config';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import authRoutes from '../src/routes/auth.route.js'
+import userRoutes from '../src/routes/user.route.js'
 import { connectDB } from './lib/db.js';
 
 const PORT = process.env.PORT;
 const app = express();
 app.use(morgan('dev'));
+app.use(express.json());
+app.use(cookieParser());
 
+ // routes
 app.use('/api/auth', authRoutes);
-
+app.use('/api/users', userRoutes)
 /*
 app.get('/api/auth/signup', (req, res)=>{
   res.send('Signup route');
