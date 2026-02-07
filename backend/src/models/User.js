@@ -1,4 +1,5 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
+import bcrypt from 'bcryptjs'
 
 const userSchema = mongoose.Schema(
   {
@@ -15,22 +16,24 @@ const userSchema = mongoose.Schema(
   },
   { timestamps: true },
 );
-
-const User = mongoose.model("User", userSchema);
-
-
 //prehook for password hashing
-userSchema.pre("save", async function(next){
+userSchema.pre("save", async function(){
 
-    if(!this.isModified("password")) return next();
+    if(!this.isModified("password")) return;
 
     try {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
+        this.password = await bcrypt.hashSync(this.password, salt);
     } catch (error) {
-        next(error)
+        console.log('Error in password Hashing',error)
     }
 })
+
+
+userSchema.methods.matchPassword = async function(enteredPassword){
+
+    return await bcrypt.compareSync(enteredPassword, this.password)
+}
+const User = mongoose.model("User", userSchema);
 
 export default User;
