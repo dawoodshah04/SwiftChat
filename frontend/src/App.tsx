@@ -1,122 +1,86 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
+import './index.css';
+
+// Pages
+import LandingPage from './pages/LandingPage';
+import SignupPage from './pages/SignupPage';
+import LoginPage from './pages/LoginPage';
+import OnboardingPage from './pages/OnboardingPage';
+import HomePage from './pages/HomePage';
+import FriendsPage from './pages/FriendsPage';
+import NotificationsPage from './pages/NotificationsPage';
+import ChatPage from './pages/ChatPage';
+
+// Guards
+import ProtectedRoute from './components/auth/ProtectedRoute';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,   // 2 min
+      gcTime:    10 * 60 * 1000,  // 10 min
+      retry: false,
+    },
+  },
+});
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/"         element={<LandingPage />} />
+          <Route path="/signup"   element={<SignupPage />} />
+          <Route path="/login"    element={<LoginPage />} />
 
-      <div className="ticks"></div>
+          {/* Semi-protected: authed but not yet onboarded */}
+          <Route path="/onboarding" element={
+            <ProtectedRoute requireOnboarded={false}>
+              <OnboardingPage />
+            </ProtectedRoute>
+          } />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* Protected: must be authed + onboarded */}
+          <Route path="/home" element={
+            <ProtectedRoute><HomePage /></ProtectedRoute>
+          } />
+          <Route path="/friends" element={
+            <ProtectedRoute><FriendsPage /></ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute><NotificationsPage /></ProtectedRoute>
+          } />
+          <Route path="/chat" element={
+            <ProtectedRoute><ChatPage /></ProtectedRoute>
+          } />
+          <Route path="/chat/:userId" element={
+            <ProtectedRoute><ChatPage /></ProtectedRoute>
+          } />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#1a1a1a',
+            color: '#efefef',
+            border: '1px solid #2e2e2e',
+            fontSize: 13,
+            borderRadius: 10,
+          },
+          success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+          error:   { iconTheme: { primary: '#f87171', secondary: '#fff' } },
+        }}
+      />
+    </QueryClientProvider>
+  );
 }
 
-export default App
+export default App;
