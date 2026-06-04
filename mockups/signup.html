@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create account — SwiftChat</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Left panel ── */
+    .auth-panel {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px 56px;
+    }
+    .auth-panel-brand { margin-bottom: 40px; }
+    .auth-form-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .auth-form-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+
+    .form-stack { display: flex; flex-direction: column; gap: 16px; }
+
+    .divider-or {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--text-3); font-size: 12px;
+    }
+    .divider-or::before, .divider-or::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .auth-alt { font-size: 13px; color: var(--text-2); text-align: center; }
+    .auth-alt a { color: var(--green); font-weight: 500; }
+    .auth-alt a:hover { text-decoration: underline; }
+
+    .terms-note { font-size: 11px; color: var(--text-3); text-align: center; line-height: 1.6; }
+    .terms-note a { color: var(--text-2); }
+    .terms-note a:hover { color: var(--text); }
+
+    /* password strength */
+    .pw-bar {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .pw-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.3s; }
+    .pw-fill.weak   { width: 33%; background: var(--red); }
+    .pw-fill.medium { width: 66%; background: var(--amber); }
+    .pw-fill.strong { width: 100%; background: var(--green); }
+    .pw-label { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+    /* ── Right panel ── */
+    .visual-panel {
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      gap: 32px;
+    }
+    .visual-head { text-align: center; }
+    .visual-head h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .visual-head p { font-size: 13px; color: var(--text-2); line-height: 1.6; max-width: 320px; }
+
+    /* profile preview cards */
+    .profile-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 320px;
+    }
+    .profile-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+    }
+    .profile-row-info { flex: 1; min-width: 0; }
+    .profile-row-name { font-size: 13px; font-weight: 600; }
+    .profile-row-meta { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+
+    /* testimonial */
+    .testimonial {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px;
+      max-width: 320px;
+    }
+    .testimonial-text { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 12px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 10px; }
+    .testimonial-name { font-size: 13px; font-weight: 600; }
+    .testimonial-sub { font-size: 11px; color: var(--text-2); }
+
+    @media (max-width: 768px) {
+      .split { grid-template-columns: 1fr; }
+      .visual-panel { display: none; }
+      .auth-panel { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="split">
+
+  <!-- ── Form Panel ── -->
+  <div class="auth-panel">
+    <div class="auth-panel-brand">
+      <a href="landing.html" class="brand">
+        <div class="brand-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/>
+          </svg>
+        </div>
+        <span class="brand-name">SwiftChat</span>
+      </a>
+    </div>
+
+    <h1 class="auth-form-title">Create your account</h1>
+    <p class="auth-form-sub">Start finding language partners in minutes.</p>
+
+    <div class="form-stack">
+      <div class="form-group">
+        <label class="form-label" for="fullname">Full name</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <!-- User SVG -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+          <input class="form-input" id="fullname" type="text" placeholder="Your full name" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email address</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <!-- Mail SVG -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </span>
+          <input class="form-input" id="email" type="email" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <!-- Lock SVG -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <input class="form-input" id="password" type="password" placeholder="Min. 6 characters"
+            oninput="checkPw(this.value)" />
+        </div>
+        <div class="pw-bar"><div class="pw-fill" id="pw-fill"></div></div>
+        <div class="pw-label" id="pw-label">Enter a password</div>
+      </div>
+
+      <button class="btn btn-green w-full" style="justify-content:center;padding:10px" onclick="window.location='onboarding.html'">
+        Create account
+        <!-- Arrow right -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+
+      <p class="terms-note">
+        By signing up you agree to our
+        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </p>
+
+      <div class="divider-or">or continue with</div>
+
+      <button class="btn btn-ghost w-full" style="justify-content:center;padding:10px">
+        <!-- Google G SVG -->
+        <svg width="16" height="16" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.3 30.2 0 24 0 14.7 0 6.7 5.4 2.8 13.2l7.8 6C12.4 13 17.8 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 6.1-10 6.1-17z"/>
+          <path fill="#FBBC05" d="M10.6 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6C.9 15.8 0 19.8 0 24s.9 8.2 2.5 11.7l8.1-7z"/>
+          <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2.1 1.4-4.7 2.3-7.7 2.3-6.1 0-11.3-4.1-13.2-9.7l-8.1 7C6.7 42.6 14.7 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <div class="auth-alt" style="margin-top:24px">
+      Already have an account? <a href="login.html">Log in</a>
+    </div>
+  </div>
+
+  <!-- ── Visual Panel ── -->
+  <div class="visual-panel">
+    <div class="visual-head">
+      <h2>Join thousands of learners</h2>
+      <p>Find your perfect language exchange partner and start speaking with confidence.</p>
+    </div>
+
+    <div class="profile-cards">
+      <div class="profile-row">
+        <div class="avatar-wrap">
+          <img src="https://ui-avatars.com/api/?name=Yuki+T&background=333&color=eee&size=64" class="avatar" width="36" height="36" alt="" />
+          <div class="online-ring"></div>
+        </div>
+        <div class="profile-row-info">
+          <div class="profile-row-name">Yuki Tanaka</div>
+          <div class="profile-row-meta">🇯🇵 Japanese → 🇺🇸 English · Tokyo</div>
+        </div>
+        <span class="lang-pill green-pill" style="font-size:10px">Online</span>
+      </div>
+
+      <div class="profile-row">
+        <div class="avatar-wrap">
+          <img src="https://ui-avatars.com/api/?name=Sofia+R&background=333&color=eee&size=64" class="avatar" width="36" height="36" alt="" />
+          <div class="online-ring"></div>
+        </div>
+        <div class="profile-row-info">
+          <div class="profile-row-name">Sofia Reyes</div>
+          <div class="profile-row-meta">🇧🇷 Portuguese → 🇩🇪 German · São Paulo</div>
+        </div>
+        <span class="lang-pill green-pill" style="font-size:10px">Online</span>
+      </div>
+
+      <div class="profile-row">
+        <img src="https://ui-avatars.com/api/?name=Jean+D&background=333&color=eee&size=64" class="avatar" width="36" height="36" alt="" />
+        <div class="profile-row-info">
+          <div class="profile-row-name">Jean Dupont</div>
+          <div class="profile-row-meta">🇫🇷 French → 🇰🇷 Korean · Paris</div>
+        </div>
+        <span class="lang-pill" style="font-size:10px">Away</span>
+      </div>
+    </div>
+
+    <div class="testimonial">
+      <div class="testimonial-text">
+        "I went from zero Japanese to having actual conversations in 3 months. SwiftChat's matching is genuinely brilliant."
+      </div>
+      <div class="testimonial-author">
+        <img src="https://ui-avatars.com/api/?name=Marcus+H&background=10b981&color=fff&size=64" class="avatar" width="32" height="32" alt="" />
+        <div>
+          <div class="testimonial-name">Marcus H.</div>
+          <div class="testimonial-sub">Learning Japanese · 🇺🇸 Chicago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function checkPw(val) {
+  const fill = document.getElementById('pw-fill');
+  const label = document.getElementById('pw-label');
+  fill.className = 'pw-fill';
+  if (val.length === 0) { label.textContent = 'Enter a password'; }
+  else if (val.length < 6) { fill.classList.add('weak'); label.textContent = 'Too short'; label.style.color = 'var(--red)'; }
+  else if (val.length < 10) { fill.classList.add('medium'); label.textContent = 'Moderate'; label.style.color = 'var(--amber)'; }
+  else { fill.classList.add('strong'); label.textContent = 'Strong password'; label.style.color = 'var(--green)'; }
+}
+</script>
+</body>
+</html>

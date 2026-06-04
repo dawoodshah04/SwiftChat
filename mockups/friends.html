@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Friends — SwiftChat</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    .friends-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .friend-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px;
+      display: flex; flex-direction: column;
+      transition: border-color 0.15s;
+    }
+    .friend-card:hover { border-color: var(--border-2); }
+
+    .fc-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+    .fc-info { flex: 1; min-width: 0; }
+    .fc-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .fc-loc { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-2); }
+    .fc-langs { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .fc-bio { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 14px; flex: 1;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .fc-actions { display: flex; gap: 8px; margin-top: auto; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      grid-column: 1/-1;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 80px 24px; text-align: center;
+      color: var(--text-2);
+    }
+    .empty-icon { color: var(--text-3); margin-bottom: 20px; }
+    .empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty-sub { font-size: 13px; max-width: 300px; line-height: 1.6; margin-bottom: 20px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .tab-item {
+      padding: 10px 16px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+      background: none; border-top: none; border-left: none; border-right: none;
+      font-family: inherit;
+    }
+    .tab-item:hover { color: var(--text); }
+    .tab-item.active { color: var(--green); border-bottom-color: var(--green); }
+
+    /* ── User menu ── */
+    .user-menu-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px 4px 4px;
+      border-radius: var(--r-full);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .user-menu-btn:hover { border-color: var(--border-2); }
+    .sf { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--r-sm); cursor: pointer; }
+    .sf:hover { background: var(--surface); }
+    .sf-info { flex: 1; min-width: 0; }
+    .sf-name { font-size: 12px; font-weight: 600; }
+    .sf-lang { font-size: 11px; color: var(--text-2); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Navbar -->
+  <nav class="app-navbar">
+    <a href="landing.html" class="brand" style="text-decoration:none">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/></svg>
+      </div>
+      <span class="brand-name">SwiftChat</span>
+    </a>
+
+    <div class="nav-items">
+      <a href="home.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Discover
+      </a>
+      <a href="friends.html" class="nav-item active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Friends
+      </a>
+      <a href="notifications.html" class="nav-item" style="position:relative">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Requests
+        <span class="badge-dot"></span>
+      </a>
+      <a href="chat.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </a>
+    </div>
+
+    <div class="user-menu-btn">
+      <img src="https://ui-avatars.com/api/?name=Alex+M&background=333&color=eee&size=64" class="avatar" width="26" height="26" alt="me" />
+      <span style="font-size:13px;font-weight:500">Alex M.</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <div class="sidebar-label">Menu</div>
+    <a href="home.html" class="s-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Discover People
+    </a>
+    <a href="friends.html" class="s-link active">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      My Friends
+    </a>
+    <a href="notifications.html" class="s-link" style="position:relative">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Requests
+      <span style="margin-left:auto" class="badge-count">3</span>
+    </a>
+    <a href="chat.html" class="s-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </a>
+
+    <div class="sidebar-label" style="margin-top:12px">Online Now</div>
+    <div class="sf">
+      <div class="avatar-wrap">
+        <img src="https://ui-avatars.com/api/?name=Yuki+T&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt="" />
+        <div class="online-ring"></div>
+      </div>
+      <div class="sf-info"><div class="sf-name">Yuki Tanaka</div><div class="sf-lang">🇯🇵 → 🇺🇸</div></div>
+    </div>
+    <div class="sf">
+      <div class="avatar-wrap">
+        <img src="https://ui-avatars.com/api/?name=Sofia+R&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt="" />
+        <div class="online-ring"></div>
+      </div>
+      <div class="sf-info"><div class="sf-name">Sofia Reyes</div><div class="sf-lang">🇧🇷 → 🇩🇪</div></div>
+    </div>
+    <div class="sf">
+      <img src="https://ui-avatars.com/api/?name=Luca+M&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt="" />
+      <div class="sf-info"><div class="sf-name">Luca Marino</div><div class="sf-lang">🇮🇹 → 🇫🇷</div></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="app-main">
+    <div class="page-head">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="page-title">My Friends</h1>
+          <p class="page-subtitle">Your language learning network · 3 friends</p>
+        </div>
+        <a href="home.html" class="btn btn-ghost btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          Find more
+        </a>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-item active" onclick="setTab(this,'all')">All friends (3)</button>
+      <button class="tab-item" onclick="setTab(this,'online')">
+        <span style="display:inline-flex;align-items:center;gap:5px">
+          <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="var(--green)"/></svg>
+          Online (2)
+        </span>
+      </button>
+    </div>
+
+    <div class="friends-grid">
+      <!-- Friend 1 -->
+      <article class="friend-card">
+        <div class="fc-top">
+          <div class="avatar-wrap">
+            <img src="https://ui-avatars.com/api/?name=Yuki+Tanaka&background=2a2a2a&color=efefef&size=128" class="avatar" width="46" height="46" alt="Yuki" />
+            <div class="online-ring"></div>
+          </div>
+          <div class="fc-info">
+            <div class="fc-name">Yuki Tanaka</div>
+            <div class="fc-loc">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Tokyo, Japan
+            </div>
+          </div>
+          <span style="font-size:10px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:3px;padding-top:2px">
+            <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            Online
+          </span>
+        </div>
+        <div class="fc-langs">
+          <span class="lang-pill">🇯🇵 Japanese</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          <span class="lang-pill green-pill">🇺🇸 English</span>
+        </div>
+        <div class="fc-bio">Passionate about anime and J-pop. My English is getting better every week!</div>
+        <div class="fc-actions">
+          <a href="chat.html" class="btn btn-green btn-sm flex-1" style="justify-content:center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Message
+          </a>
+          <button class="btn-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Friend 2 -->
+      <article class="friend-card">
+        <div class="fc-top">
+          <div class="avatar-wrap">
+            <img src="https://ui-avatars.com/api/?name=Sofia+Reyes&background=2a2a2a&color=efefef&size=128" class="avatar" width="46" height="46" alt="Sofia" />
+            <div class="online-ring"></div>
+          </div>
+          <div class="fc-info">
+            <div class="fc-name">Sofia Reyes</div>
+            <div class="fc-loc">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              São Paulo, Brazil
+            </div>
+          </div>
+          <span style="font-size:10px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:3px;padding-top:2px">
+            <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            Online
+          </span>
+        </div>
+        <div class="fc-langs">
+          <span class="lang-pill">🇧🇷 Portuguese</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          <span class="lang-pill green-pill">🇩🇪 German</span>
+        </div>
+        <div class="fc-bio">Software engineer learning German to work abroad. Love tech conversations!</div>
+        <div class="fc-actions">
+          <a href="chat.html" class="btn btn-green btn-sm flex-1" style="justify-content:center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Message
+          </a>
+          <button class="btn-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+        </div>
+      </article>
+
+      <!-- Friend 3 -->
+      <article class="friend-card">
+        <div class="fc-top">
+          <img src="https://ui-avatars.com/api/?name=Luca+Marino&background=2a2a2a&color=efefef&size=128" class="avatar" width="46" height="46" alt="Luca" />
+          <div class="fc-info">
+            <div class="fc-name">Luca Marino</div>
+            <div class="fc-loc">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Rome, Italy
+            </div>
+          </div>
+          <span style="font-size:10px;font-weight:600;color:var(--text-3)">Away</span>
+        </div>
+        <div class="fc-langs">
+          <span class="lang-pill">🇮🇹 Italian</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          <span class="lang-pill green-pill">🇫🇷 French</span>
+        </div>
+        <div class="fc-bio">Architect from Rome. Passionate about history, design, and European cinema.</div>
+        <div class="fc-actions">
+          <a href="chat.html" class="btn btn-ghost btn-sm flex-1" style="justify-content:center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Message
+          </a>
+          <button class="btn-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+        </div>
+      </article>
+    </div>
+  </main>
+</div>
+
+<script>
+function setTab(btn, type) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

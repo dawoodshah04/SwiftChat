@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwiftChat — Connect with Language Learners</title>
+  <meta name="description" content="Find native speakers, practice languages through real conversations, and make global friendships on SwiftChat." />
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    body { overflow-x: hidden; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* top bar */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      height: 60px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    /* hero content */
+    .hero-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+    }
+    .hero-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      border-radius: var(--r-full);
+      background: var(--green-dim);
+      border: 1px solid var(--green-rim);
+      font-size: 12px; font-weight: 600;
+      color: var(--green);
+      margin-bottom: 24px;
+    }
+    .hero-title {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      max-width: 680px;
+      margin-bottom: 20px;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--green);
+    }
+    .hero-sub {
+      font-size: 16px;
+      color: var(--text-2);
+      max-width: 500px;
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+    .hero-cta { display: flex; gap: 10px; justify-content: center; margin-bottom: 56px; }
+
+    /* stat row */
+    .stats {
+      display: flex; gap: 40px;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 64px;
+      width: 100%;
+      max-width: 600px;
+      justify-content: center;
+    }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 26px; font-weight: 700; color: var(--text); }
+    .stat-label { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+    /* features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      max-width: 760px;
+      width: 100%;
+    }
+    .feature {
+      background: var(--bg);
+      padding: 28px 24px;
+      transition: background 0.15s;
+    }
+    .feature:hover { background: var(--surface); }
+    .feature-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--r-sm);
+      background: var(--green-dim);
+      border: 1px solid var(--green-rim);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      color: var(--green);
+    }
+    .feature-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .feature-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+
+    /* language pairs preview */
+    .pairs-section {
+      padding: 80px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .pairs-head { text-align: center; margin-bottom: 40px; }
+    .pairs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .pair-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .pair-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
+    .pair-avatars { display: flex; gap: -8px; margin-bottom: 12px; }
+    .pair-avatars img:last-child { margin-left: -8px; }
+    .pair-langs {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .pair-arrow { color: var(--text-3); }
+    .pair-name { font-size: 13px; font-weight: 600; }
+    .pair-loc { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+    /* footer */
+    .landing-footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-link { font-size: 13px; color: var(--text-2); }
+    .footer-link:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="hero">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <!-- Lightning bolt / chat mark -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/>
+        </svg>
+      </div>
+      <span class="brand-name">SwiftChat</span>
+    </div>
+    <nav style="display:flex;gap:4px">
+      <a href="home.html" class="btn btn-ghost btn-sm">Browse</a>
+      <a href="login.html" class="btn btn-outline btn-sm">Log in</a>
+      <a href="signup.html" class="btn btn-green btn-sm">Sign up free</a>
+    </nav>
+  </header>
+
+  <!-- Hero Body -->
+  <main class="hero-body">
+    <div class="hero-label fade-up">
+      <!-- Globe SVG -->
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      10,000+ learners in 150+ countries
+    </div>
+
+    <h1 class="hero-title fade-up delay-1">
+      Learn languages through<br />
+      <em>real conversations</em>
+    </h1>
+
+    <p class="hero-sub fade-up delay-2">
+      Match with native speakers who want to learn your language.
+      Practice together, grow together.
+    </p>
+
+    <div class="hero-cta fade-up delay-3">
+      <a href="signup.html" class="btn btn-green btn-lg">
+        <!-- User plus SVG -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
+          <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+        </svg>
+        Get started — it's free
+      </a>
+      <a href="home.html" class="btn btn-outline btn-lg">
+        See the community
+        <!-- Arrow right -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats fade-up delay-4">
+      <div class="stat-item">
+        <div class="stat-num">10K+</div>
+        <div class="stat-label">Active learners</div>
+      </div>
+      <div class="stat-item" style="border-left:1px solid var(--border);border-right:1px solid var(--border);padding:0 40px">
+        <div class="stat-num">48</div>
+        <div class="stat-label">Languages</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">150+</div>
+        <div class="stat-label">Countries</div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features fade-up delay-5">
+      <div class="feature">
+        <div class="feature-icon">
+          <!-- Users SVG -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="feature-title">Smart Matching</div>
+        <div class="feature-desc">We find native speakers who want to learn your language — a true exchange.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <!-- Message SVG -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="feature-title">Real-time Chat</div>
+        <div class="feature-desc">Instant messaging powered by Stream. No delays, no friction.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <!-- Shield/check SVG -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div class="feature-title">Safe & Verified</div>
+        <div class="feature-desc">Profile-based matching with community guidelines and reporting tools.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Language pair previews -->
+  <section class="pairs-section">
+    <div class="pairs-head">
+      <h2 style="font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px">Active pairs right now</h2>
+      <p class="muted">Real language exchanges happening on SwiftChat</p>
+    </div>
+    <div class="pairs-grid">
+      <div class="pair-card">
+        <div class="pair-avatars">
+          <img src="https://ui-avatars.com/api/?name=Alex+M&background=333&color=eee&size=64" class="avatar" width="32" height="32" alt="" />
+          <img src="https://ui-avatars.com/api/?name=Yuki+T&background=10b981&color=fff&size=64" class="avatar" width="32" height="32" alt="" />
+        </div>
+        <div class="pair-langs">
+          <span class="lang-pill">🇺🇸 English</span>
+          <span class="pair-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </span>
+          <span class="lang-pill green-pill">🇯🇵 Japanese</span>
+        </div>
+        <div class="pair-name">Alex & Yuki</div>
+        <div class="pair-loc">New York ↔ Tokyo</div>
+      </div>
+      <div class="pair-card">
+        <div class="pair-avatars">
+          <img src="https://ui-avatars.com/api/?name=Sofia+R&background=333&color=eee&size=64" class="avatar" width="32" height="32" alt="" />
+          <img src="https://ui-avatars.com/api/?name=Lena+K&background=10b981&color=fff&size=64" class="avatar" width="32" height="32" alt="" />
+        </div>
+        <div class="pair-langs">
+          <span class="lang-pill">🇧🇷 Portuguese</span>
+          <span class="pair-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="lang-pill green-pill">🇩🇪 German</span>
+        </div>
+        <div class="pair-name">Sofia & Lena</div>
+        <div class="pair-loc">São Paulo ↔ Berlin</div>
+      </div>
+      <div class="pair-card">
+        <div class="pair-avatars">
+          <img src="https://ui-avatars.com/api/?name=Jean+D&background=333&color=eee&size=64" class="avatar" width="32" height="32" alt="" />
+          <img src="https://ui-avatars.com/api/?name=Ji+W&background=10b981&color=fff&size=64" class="avatar" width="32" height="32" alt="" />
+        </div>
+        <div class="pair-langs">
+          <span class="lang-pill">🇫🇷 French</span>
+          <span class="pair-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="lang-pill green-pill">🇰🇷 Korean</span>
+        </div>
+        <div class="pair-name">Jean & Ji-woo</div>
+        <div class="pair-loc">Paris ↔ Seoul</div>
+      </div>
+      <div class="pair-card">
+        <div class="pair-avatars">
+          <img src="https://ui-avatars.com/api/?name=Priya+S&background=333&color=eee&size=64" class="avatar" width="32" height="32" alt="" />
+          <img src="https://ui-avatars.com/api/?name=Carlos+M&background=10b981&color=fff&size=64" class="avatar" width="32" height="32" alt="" />
+        </div>
+        <div class="pair-langs">
+          <span class="lang-pill">🇮🇳 Hindi</span>
+          <span class="pair-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+          <span class="lang-pill green-pill">🇪🇸 Spanish</span>
+        </div>
+        <div class="pair-name">Priya & Carlos</div>
+        <div class="pair-loc">Mumbai ↔ Madrid</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/>
+        </svg>
+      </div>
+      <span class="brand-name">SwiftChat</span>
+    </div>
+    <div class="footer-links">
+      <a href="#" class="footer-link">Privacy</a>
+      <a href="#" class="footer-link">Terms</a>
+      <a href="#" class="footer-link">Help</a>
+    </div>
+    <span class="t-sm muted">© 2025 SwiftChat</span>
+  </footer>
+
+</div>
+</body>
+</html>

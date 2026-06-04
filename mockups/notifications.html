@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Requests — SwiftChat</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .tab-item {
+      padding: 10px 16px; font-size: 13px; font-weight: 500; color: var(--text-2);
+      cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: all 0.15s; background: none; border-top:none; border-left:none; border-right:none;
+      font-family: inherit;
+    }
+    .tab-item:hover { color: var(--text); }
+    .tab-item.active { color: var(--green); border-bottom-color: var(--green); }
+
+    /* ── Notification Row ── */
+    .notif-list { display: flex; flex-direction: column; gap: 8px; }
+    .notif-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      transition: border-color 0.15s;
+    }
+    .notif-row:hover { border-color: var(--border-2); }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-text { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+    .notif-text span { color: var(--text); font-weight: 600; }
+    .notif-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
+    .notif-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); }
+    .notif-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ── Accepted row ── */
+    .accepted-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+    }
+    .accepted-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--green-dim);
+      border: 1px solid var(--green-rim);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+    .accepted-text { font-size: 13px; color: var(--text-2); flex: 1; }
+    .accepted-text strong { color: var(--text); font-weight: 600; }
+    .accepted-time { font-size: 11px; color: var(--text-3); }
+
+    /* ── Empty ── */
+    .empty-section {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 48px 24px; text-align: center;
+    }
+    .empty-section svg { color: var(--text-3); margin-bottom: 14px; }
+    .empty-section p { font-size: 13px; color: var(--text-2); }
+
+    /* user menu */
+    .user-menu-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px 4px 4px;
+      border-radius: var(--r-full);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .sf { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--r-sm); cursor: pointer; }
+    .sf:hover { background: var(--surface); }
+    .sf-info { flex: 1; min-width: 0; }
+    .sf-name { font-size: 12px; font-weight: 600; }
+    .sf-lang { font-size: 11px; color: var(--text-2); }
+
+    /* tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Navbar -->
+  <nav class="app-navbar">
+    <a href="landing.html" class="brand" style="text-decoration:none">
+      <div class="brand-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/></svg></div>
+      <span class="brand-name">SwiftChat</span>
+    </a>
+    <div class="nav-items">
+      <a href="home.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Discover
+      </a>
+      <a href="friends.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Friends
+      </a>
+      <a href="notifications.html" class="nav-item active" style="position:relative">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Requests
+        <span class="badge-dot"></span>
+      </a>
+      <a href="chat.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </a>
+    </div>
+    <div class="user-menu-btn">
+      <img src="https://ui-avatars.com/api/?name=Alex+M&background=333&color=eee&size=64" class="avatar" width="26" height="26" alt="me" />
+      <span style="font-size:13px;font-weight:500">Alex M.</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <div class="sidebar-label">Menu</div>
+    <a href="home.html" class="s-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Discover People</a>
+    <a href="friends.html" class="s-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>My Friends</a>
+    <a href="notifications.html" class="s-link active" style="position:relative">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Requests
+      <span style="margin-left:auto" class="badge-count" id="sidebar-count">3</span>
+    </a>
+    <a href="chat.html" class="s-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</a>
+
+    <div class="sidebar-label" style="margin-top:12px">Online Now</div>
+    <div class="sf">
+      <div class="avatar-wrap"><img src="https://ui-avatars.com/api/?name=Yuki+T&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt="" /><div class="online-ring"></div></div>
+      <div class="sf-info"><div class="sf-name">Yuki Tanaka</div><div class="sf-lang">🇯🇵 → 🇺🇸</div></div>
+    </div>
+    <div class="sf">
+      <div class="avatar-wrap"><img src="https://ui-avatars.com/api/?name=Sofia+R&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt="" /><div class="online-ring"></div></div>
+      <div class="sf-info"><div class="sf-name">Sofia Reyes</div><div class="sf-lang">🇧🇷 → 🇩🇪</div></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="app-main">
+    <div class="page-head">
+      <h1 class="page-title">Friend Requests</h1>
+      <p class="page-subtitle">Manage your incoming and outgoing requests</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-item active" onclick="switchTab('incoming', this)">
+        Incoming
+        <span class="badge-count" id="incoming-count" style="margin-left:6px">3</span>
+      </button>
+      <button class="tab-item" onclick="switchTab('accepted', this)">Accepted</button>
+      <button class="tab-item" onclick="switchTab('outgoing', this)">Outgoing</button>
+    </div>
+
+    <!-- ── Incoming Panel ── -->
+    <div class="tab-panel active" id="panel-incoming">
+      <div class="notif-list" id="incoming-list">
+
+        <!-- Request 1 -->
+        <div class="notif-row" id="req-1">
+          <img src="https://ui-avatars.com/api/?name=Han+Seojun&background=2a2a2a&color=efefef&size=128" class="avatar" width="42" height="42" alt="" />
+          <div class="notif-body">
+            <div class="notif-text"><span>Han Seojun</span> sent you a friend request</div>
+            <div class="notif-meta">
+              🇰🇷 Korean → 🇺🇸 English
+              <span class="notif-dot"></span>
+              Seoul, South Korea
+              <span class="notif-dot"></span>
+              2h ago
+            </div>
+          </div>
+          <div class="notif-actions">
+            <button class="btn btn-green btn-sm" onclick="acceptReq('req-1')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Accept
+            </button>
+            <button class="btn-icon" onclick="declineReq('req-1')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Request 2 -->
+        <div class="notif-row" id="req-2">
+          <img src="https://ui-avatars.com/api/?name=Amara+Diallo&background=2a2a2a&color=efefef&size=128" class="avatar" width="42" height="42" alt="" />
+          <div class="notif-body">
+            <div class="notif-text"><span>Amara Diallo</span> sent you a friend request</div>
+            <div class="notif-meta">
+              🇫🇷 French → 🇬🇧 English
+              <span class="notif-dot"></span>
+              Dakar, Senegal
+              <span class="notif-dot"></span>
+              5h ago
+            </div>
+          </div>
+          <div class="notif-actions">
+            <button class="btn btn-green btn-sm" onclick="acceptReq('req-2')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Accept
+            </button>
+            <button class="btn-icon" onclick="declineReq('req-2')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Request 3 -->
+        <div class="notif-row" id="req-3">
+          <img src="https://ui-avatars.com/api/?name=Marco+Rossi&background=2a2a2a&color=efefef&size=128" class="avatar" width="42" height="42" alt="" />
+          <div class="notif-body">
+            <div class="notif-text"><span>Marco Rossi</span> sent you a friend request</div>
+            <div class="notif-meta">
+              🇮🇹 Italian → 🇯🇵 Japanese
+              <span class="notif-dot"></span>
+              Milan, Italy
+              <span class="notif-dot"></span>
+              1 day ago
+            </div>
+          </div>
+          <div class="notif-actions">
+            <button class="btn btn-green btn-sm" onclick="acceptReq('req-3')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Accept
+            </button>
+            <button class="btn-icon" onclick="declineReq('req-3')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- empty state (hidden initially) -->
+      <div class="empty-section" id="incoming-empty" style="display:none">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <p style="margin-top:12px;font-size:14px;font-weight:600;color:var(--text)">No incoming requests</p>
+        <p>When someone sends you a request, it will appear here.</p>
+      </div>
+    </div>
+
+    <!-- ── Accepted Panel ── -->
+    <div class="tab-panel" id="panel-accepted">
+      <div class="notif-list">
+        <div class="accepted-row">
+          <div class="accepted-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <img src="https://ui-avatars.com/api/?name=Yuki+Tanaka&background=2a2a2a&color=efefef&size=64" class="avatar" width="32" height="32" alt="" />
+          <div class="accepted-text"><strong>Yuki Tanaka</strong> accepted your request — you're now friends!</div>
+          <span class="accepted-time">3 days ago</span>
+          <a href="chat.html" class="btn btn-ghost btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
+          </a>
+        </div>
+        <div class="accepted-row">
+          <div class="accepted-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <img src="https://ui-avatars.com/api/?name=Sofia+Reyes&background=2a2a2a&color=efefef&size=64" class="avatar" width="32" height="32" alt="" />
+          <div class="accepted-text"><strong>Sofia Reyes</strong> accepted your request — you're now friends!</div>
+          <span class="accepted-time">1 week ago</span>
+          <a href="chat.html" class="btn btn-ghost btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
+          </a>
+        </div>
+        <div class="accepted-row">
+          <div class="accepted-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <img src="https://ui-avatars.com/api/?name=Luca+Marino&background=2a2a2a&color=efefef&size=64" class="avatar" width="32" height="32" alt="" />
+          <div class="accepted-text"><strong>Luca Marino</strong> accepted your request — you're now friends!</div>
+          <span class="accepted-time">2 weeks ago</span>
+          <a href="chat.html" class="btn btn-ghost btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Outgoing Panel ── -->
+    <div class="tab-panel" id="panel-outgoing">
+      <div class="notif-list">
+        <div class="notif-row">
+          <img src="https://ui-avatars.com/api/?name=Jean+Dupont&background=2a2a2a&color=efefef&size=128" class="avatar" width="42" height="42" alt="" />
+          <div class="notif-body">
+            <div class="notif-text">You sent a request to <span>Jean Dupont</span></div>
+            <div class="notif-meta">🇫🇷 French → 🇰🇷 Korean <span class="notif-dot"></span> Paris, France <span class="notif-dot"></span> 3h ago</div>
+          </div>
+          <span class="lang-pill" style="font-size:11px;flex-shrink:0">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Pending
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let count = 3;
+
+function acceptReq(id) {
+  const el = document.getElementById(id);
+  el.style.transition = 'opacity 0.25s, transform 0.25s';
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(12px)';
+  setTimeout(() => el.remove(), 260);
+  count--;
+  updateCount();
+}
+
+function declineReq(id) {
+  const el = document.getElementById(id);
+  el.style.transition = 'opacity 0.25s';
+  el.style.opacity = '0';
+  setTimeout(() => el.remove(), 260);
+  count--;
+  updateCount();
+  setTimeout(() => {
+    if (count === 0) {
+      document.getElementById('incoming-empty').style.display = 'flex';
+    }
+  }, 300);
+}
+
+function updateCount() {
+  const el = document.getElementById('incoming-count');
+  const sidebar = document.getElementById('sidebar-count');
+  if (count > 0) { el.textContent = count; sidebar.textContent = count; }
+  else { el.remove(); sidebar.remove(); }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>

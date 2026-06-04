@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat — SwiftChat</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    /* Override app-shell for chat — no padding on main */
+    .app-shell { grid-template-columns: 220px 280px 1fr; }
+
+    /* ── Conversation List (middle column) ── */
+    .conv-list {
+      border-right: 1px solid var(--border);
+      background: var(--bg-2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .conv-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .conv-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .conv-search {
+      position: relative;
+    }
+    .conv-search input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 6px 10px 6px 30px;
+      font-size: 12px; color: var(--text); font-family: inherit;
+      outline: none;
+    }
+    .conv-search input::placeholder { color: var(--text-3); }
+    .conv-search input:focus { border-color: var(--green); }
+    .conv-search-icon {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      color: var(--text-3); display: flex; pointer-events: none;
+    }
+    .conv-items { overflow-y: auto; flex: 1; padding: 8px; }
+    .conv-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 10px;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .conv-item:hover { background: var(--surface); }
+    .conv-item.active { background: var(--surface-2); }
+    .conv-item-info { flex: 1; min-width: 0; }
+    .conv-item-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
+    .conv-item-time { font-size: 10px; color: var(--text-3); }
+    .conv-item-preview { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; justify-content: space-between; }
+    .unread-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    /* ── Chat Area ── */
+    .chat-area {
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* Chat header */
+    .chat-hdr {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+      flex-shrink: 0;
+    }
+    .chat-hdr-info { flex: 1; }
+    .chat-hdr-name { font-size: 14px; font-weight: 700; }
+    .chat-hdr-status { font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+    .chat-hdr-actions { display: flex; gap: 6px; }
+
+    /* Messages */
+    .chat-msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Date divider */
+    .date-divider {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-3); font-size: 11px; font-weight: 500;
+    }
+    .date-divider::before, .date-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* Message row */
+    .msg-row { display: flex; gap: 8px; align-items: flex-end; }
+    .msg-row.out { flex-direction: row-reverse; }
+    .msg-bubble {
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 13px; line-height: 1.55;
+      max-width: 72%;
+    }
+    .msg-bubble.in {
+      background: var(--surface-2);
+      border-bottom-left-radius: 3px;
+      color: var(--text);
+    }
+    .msg-bubble.out {
+      background: var(--green);
+      border-bottom-right-radius: 3px;
+      color: #fff;
+    }
+    .msg-meta { font-size: 10px; color: var(--text-3); white-space: nowrap; margin-bottom: 2px; }
+    .msg-col { display: flex; flex-direction: column; }
+    .msg-col.out { align-items: flex-end; }
+
+    /* Typing indicator */
+    .typing {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0;
+    }
+    .typing-dots {
+      display: flex; gap: 4px;
+      background: var(--surface-2);
+      padding: 10px 14px;
+      border-radius: 14px;
+      border-bottom-left-radius: 3px;
+    }
+    .typing-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-3);
+      animation: typingAnim 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingAnim {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    /* Input */
+    .chat-input-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-2);
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-full);
+      padding: 9px 16px;
+      font-size: 13px; font-family: inherit; color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .chat-input:focus { border-color: var(--green); }
+    .chat-input::placeholder { color: var(--text-3); }
+    .send-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--green);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: var(--green-2); transform: scale(1.05); }
+
+    /* user menu */
+    .user-menu-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px 4px 4px;
+      border-radius: var(--r-full);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .sf { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--r-sm); cursor: pointer; }
+    .sf:hover { background: var(--surface); }
+    .sf-info { flex: 1; min-width: 0; }
+    .sf-name { font-size: 12px; font-weight: 600; }
+    .sf-lang { font-size: 11px; color: var(--text-2); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Navbar -->
+  <nav class="app-navbar">
+    <a href="landing.html" class="brand" style="text-decoration:none">
+      <div class="brand-mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/></svg></div>
+      <span class="brand-name">SwiftChat</span>
+    </a>
+    <div class="nav-items">
+      <a href="home.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Discover
+      </a>
+      <a href="friends.html" class="nav-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Friends
+      </a>
+      <a href="notifications.html" class="nav-item" style="position:relative">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Requests
+        <span class="badge-dot"></span>
+      </a>
+      <a href="chat.html" class="nav-item active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </a>
+    </div>
+    <div class="user-menu-btn">
+      <img src="https://ui-avatars.com/api/?name=Alex+M&background=333&color=eee&size=64" class="avatar" width="26" height="26" alt="me" />
+      <span style="font-size:13px;font-weight:500">Alex M.</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <div class="sidebar-label">Menu</div>
+    <a href="home.html" class="s-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Discover People</a>
+    <a href="friends.html" class="s-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>My Friends</a>
+    <a href="notifications.html" class="s-link" style="position:relative"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Requests<span style="margin-left:auto" class="badge-count">3</span></a>
+    <a href="chat.html" class="s-link active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</a>
+    <div class="sidebar-label" style="margin-top:12px">Online Now</div>
+    <div class="sf">
+      <div class="avatar-wrap"><img src="https://ui-avatars.com/api/?name=Yuki+T&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt=""/><div class="online-ring"></div></div>
+      <div class="sf-info"><div class="sf-name">Yuki Tanaka</div><div class="sf-lang">🇯🇵 → 🇺🇸</div></div>
+    </div>
+    <div class="sf">
+      <div class="avatar-wrap"><img src="https://ui-avatars.com/api/?name=Sofia+R&background=333&color=eee&size=64" class="avatar" width="30" height="30" alt=""/><div class="online-ring"></div></div>
+      <div class="sf-info"><div class="sf-name">Sofia Reyes</div><div class="sf-lang">🇧🇷 → 🇩🇪</div></div>
+    </div>
+  </aside>
+
+  <!-- ── Conversation List ── -->
+  <div class="conv-list">
+    <div class="conv-header">
+      <div class="conv-title">Messages</div>
+      <div class="conv-search">
+        <span class="conv-search-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" placeholder="Search conversations…" />
+      </div>
+    </div>
+    <div class="conv-items">
+      <!-- Conversation items -->
+      <div class="conv-item active" onclick="selectConv(this,'Yuki Tanaka','🇯🇵 → 🇺🇸')">
+        <div class="avatar-wrap">
+          <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=64" class="avatar" width="36" height="36" alt="" />
+          <div class="online-ring"></div>
+        </div>
+        <div class="conv-item-info">
+          <div class="conv-item-name">
+            Yuki Tanaka
+            <span class="conv-item-time">10:29</span>
+          </div>
+          <div class="conv-item-preview">
+            食べています — correct? 😄
+          </div>
+        </div>
+      </div>
+
+      <div class="conv-item" onclick="selectConv(this,'Sofia Reyes','🇧🇷 → 🇩🇪')">
+        <div class="avatar-wrap">
+          <img src="https://ui-avatars.com/api/?name=Sofia+R&background=2a2a2a&color=efefef&size=64" class="avatar" width="36" height="36" alt="" />
+          <div class="online-ring"></div>
+        </div>
+        <div class="conv-item-info">
+          <div class="conv-item-name">
+            Sofia Reyes
+            <span class="conv-item-time">Yesterday</span>
+          </div>
+          <div class="conv-item-preview">
+            Ich verstehe jetzt! Danke 🙏
+            <span class="unread-dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="conv-item" onclick="selectConv(this,'Luca Marino','🇮🇹 → 🇫🇷')">
+        <img src="https://ui-avatars.com/api/?name=Luca+M&background=2a2a2a&color=efefef&size=64" class="avatar" width="36" height="36" alt="" />
+        <div class="conv-item-info">
+          <div class="conv-item-name">
+            Luca Marino
+            <span class="conv-item-time">Mon</span>
+          </div>
+          <div class="conv-item-preview">
+            C'est magnifique!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Chat Area ── -->
+  <div class="chat-area">
+    <!-- Header -->
+    <div class="chat-hdr">
+      <div class="avatar-wrap">
+        <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=128" class="avatar" id="chat-avatar" width="36" height="36" alt="" />
+        <div class="online-ring"></div>
+      </div>
+      <div class="chat-hdr-info">
+        <div class="chat-hdr-name" id="chat-name">Yuki Tanaka</div>
+        <div class="chat-hdr-status">
+          <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+          Online · 🇯🇵 Japanese → 🇺🇸 English
+        </div>
+      </div>
+      <div class="chat-hdr-actions">
+        <button class="btn-icon" title="Voice call">
+          <!-- Phone SVG -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6.29 6.29l1.84-1.84a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </button>
+        <button class="btn-icon" title="Video call">
+          <!-- Video SVG -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </button>
+        <button class="btn-icon">
+          <!-- More dots -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="date-divider">Today</div>
+
+      <!-- Message in -->
+      <div class="msg-row">
+        <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=64" class="avatar" width="26" height="26" alt="" style="flex-shrink:0" />
+        <div class="msg-col">
+          <div class="msg-meta">Yuki · 10:24 AM</div>
+          <div class="msg-bubble in">こんにちは！How was your day? I practiced the phrases you taught me yesterday 😊</div>
+        </div>
+      </div>
+
+      <!-- Message out -->
+      <div class="msg-row out">
+        <img src="https://ui-avatars.com/api/?name=Alex+M&background=10b981&color=fff&size=64" class="avatar" width="26" height="26" alt="" style="flex-shrink:0" />
+        <div class="msg-col out">
+          <div class="msg-meta">You · 10:26 AM</div>
+          <div class="msg-bubble out">That's awesome! Your Japanese is improving so fast 🎉 Did you try using て-form verbs?</div>
+        </div>
+      </div>
+
+      <!-- Message in -->
+      <div class="msg-row">
+        <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=64" class="avatar" width="26" height="26" alt="" style="flex-shrink:0" />
+        <div class="msg-col">
+          <div class="msg-meta">Yuki · 10:27 AM</div>
+          <div class="msg-bubble in">Yes! 食べています (tabete imasu) — I am eating. Is that correct? 😄</div>
+        </div>
+      </div>
+
+      <!-- Message out -->
+      <div class="msg-row out">
+        <img src="https://ui-avatars.com/api/?name=Alex+M&background=10b981&color=fff&size=64" class="avatar" width="26" height="26" alt="" style="flex-shrink:0" />
+        <div class="msg-col out">
+          <div class="msg-meta">You · 10:29 AM</div>
+          <div class="msg-bubble out">Perfect! 完璧です (kanpeki desu)! 🌟 You're getting the hang of it fast.</div>
+        </div>
+      </div>
+
+      <!-- Message in -->
+      <div class="msg-row">
+        <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=64" class="avatar" width="26" height="26" alt="" style="flex-shrink:0" />
+        <div class="msg-col">
+          <div class="msg-meta">Yuki · 10:30 AM</div>
+          <div class="msg-bubble in">ありがとうございます！Can we practice the past tense next? 🙏</div>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="typing" id="typing-row">
+        <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=64" class="avatar" width="26" height="26" alt="" />
+        <div class="typing-dots">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="chat-input-bar">
+      <button class="btn-icon" title="Attachment">
+        <!-- Paperclip SVG -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </button>
+      <input class="chat-input" type="text" placeholder="Type a message…" id="msg-input"
+        onkeydown="if(event.key==='Enter') sendMsg()" />
+      <button class="btn-icon" title="Emoji">
+        <!-- Smile SVG -->
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      </button>
+      <button class="send-btn" onclick="sendMsg()" title="Send">
+        <!-- Send SVG -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function sendMsg() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const msgs = document.getElementById('chat-msgs');
+  const typing = document.getElementById('typing-row');
+
+  // Create msg element
+  const row = document.createElement('div');
+  row.className = 'msg-row out';
+  row.style.opacity = '0';
+  row.style.transform = 'translateY(8px)';
+  row.style.transition = 'all 0.2s ease';
+  row.innerHTML = `
+    <img src="https://ui-avatars.com/api/?name=Alex+M&background=10b981&color=fff&size=64" class="avatar" width="26" height="26" style="flex-shrink:0" />
+    <div class="msg-col out">
+      <div class="msg-meta">You · Just now</div>
+      <div class="msg-bubble out">${text.replace(/</g,'&lt;')}</div>
+    </div>`;
+
+  msgs.insertBefore(row, typing);
+  setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'translateY(0)'; }, 10);
+  msgs.scrollTop = msgs.scrollHeight;
+  input.value = '';
+
+  // Show/hide typing
+  typing.style.display = 'flex';
+  setTimeout(() => {
+    typing.style.display = 'none';
+    // add reply
+    const reply = document.createElement('div');
+    reply.className = 'msg-row';
+    reply.style.opacity = '0';
+    reply.style.transition = 'opacity 0.2s';
+    const replies = ['それは素晴らしい！', 'わかりました！次は何を練習しますか？', 'Yes! I understand now 😊', 'ありがとう！That makes sense!'];
+    reply.innerHTML = `
+      <img src="https://ui-avatars.com/api/?name=Yuki+T&background=2a2a2a&color=efefef&size=64" class="avatar" width="26" height="26" style="flex-shrink:0"/>
+      <div class="msg-col">
+        <div class="msg-meta">Yuki · Just now</div>
+        <div class="msg-bubble in">${replies[Math.floor(Math.random()*replies.length)]}</div>
+      </div>`;
+    msgs.insertBefore(reply, typing);
+    setTimeout(() => { reply.style.opacity = '1'; }, 10);
+    msgs.scrollTop = msgs.scrollHeight;
+    typing.style.display = 'flex';
+    setTimeout(() => { typing.style.display = 'none'; }, 4000);
+  }, 2000);
+}
+
+function selectConv(el, name) {
+  document.querySelectorAll('.conv-item').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('chat-name').textContent = name;
+}
+</script>
+</body>
+</html>

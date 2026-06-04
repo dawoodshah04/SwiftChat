@@ -13,7 +13,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
- // routes
+// routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes)
 app.use('/api/chat', chatRoutes)

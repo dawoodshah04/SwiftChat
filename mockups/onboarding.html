@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Set up your profile — SwiftChat</title>
+  <link rel="stylesheet" href="_shared.css" />
+  <style>
+    body {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .onboard-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-2);
+    }
+    .step-track {
+      display: flex; align-items: center; gap: 0;
+    }
+    .step-item {
+      display: flex; align-items: center; gap: 0;
+    }
+    .step-circle {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--border);
+      color: var(--text-3);
+      background: var(--surface);
+      transition: all 0.2s;
+    }
+    .step-circle.done {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .step-circle.active {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-dim);
+    }
+    .step-name {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-3);
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+    .step-name.active { color: var(--text); }
+    .step-line {
+      width: 40px; height: 1px;
+      background: var(--border);
+      margin: 0 8px;
+    }
+    .step-line.done { background: var(--green); }
+
+    /* ── Main ── */
+    .onboard-main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 0;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 48px 32px;
+      gap: 48px;
+    }
+
+    /* ── Form side ── */
+    .onboard-form-col { display: flex; flex-direction: column; }
+    .onboard-step-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--green); margin-bottom: 8px;
+    }
+    .onboard-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .onboard-sub { font-size: 14px; color: var(--text-2); margin-bottom: 32px; line-height: 1.6; }
+    .form-stack { display: flex; flex-direction: column; gap: 18px; }
+
+    /* avatar picker */
+    .avatar-picker {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+    }
+    .avatar-picker img { border-radius: 50%; }
+    .avatar-picker-info { flex: 1; }
+    .avatar-picker-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .avatar-picker-sub { font-size: 12px; color: var(--text-2); }
+    .avatar-picker-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+    /* 2-col grid */
+    .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* language picker */
+    .lang-picker {
+      display: grid; grid-template-columns: 1fr 32px 1fr; gap: 8px; align-items: end;
+    }
+    .lang-swap {
+      width: 32px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .lang-swap:hover { color: var(--green); }
+
+    /* nav buttons */
+    .onboard-nav {
+      display: flex; gap: 10px; margin-top: 32px;
+    }
+
+    /* ── Preview side ── */
+    .onboard-preview-col {
+      position: sticky; top: 24px;
+      height: fit-content;
+    }
+    .preview-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .profile-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+    .pp-cover {
+      height: 80px;
+      background: linear-gradient(135deg, #1a2a1a, #0f1f0f);
+      position: relative;
+    }
+    .pp-avatar-wrap {
+      position: absolute; bottom: -24px; left: 20px;
+    }
+    .pp-body { padding: 32px 20px 20px; }
+    .pp-name { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+    .pp-location {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 12px; color: var(--text-2); margin-bottom: 14px;
+    }
+    .pp-langs {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .pp-bio {
+      font-size: 13px; color: var(--text-2); line-height: 1.65;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pp-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .pp-stat { text-align: center; padding: 8px 0; }
+    .pp-stat-num { font-size: 15px; font-weight: 700; }
+    .pp-stat-label { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+    .pp-stat + .pp-stat { border-left: 1px solid var(--border); }
+
+    /* step panels */
+    .step-panel { display: none; }
+    .step-panel.active { display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="onboard-bar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="white"/>
+        </svg>
+      </div>
+      <span class="brand-name">SwiftChat</span>
+    </div>
+
+    <div class="step-track" id="step-track">
+      <div class="step-item">
+        <div class="step-circle done" id="sc-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <span class="step-name" id="sn-1">Account</span>
+      </div>
+      <div class="step-line done" id="sl-1"></div>
+      <div class="step-item">
+        <div class="step-circle active" id="sc-2">2</div>
+        <span class="step-name active" id="sn-2">Profile</span>
+      </div>
+      <div class="step-line" id="sl-2"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc-3">3</div>
+        <span class="step-name" id="sn-3">Languages</span>
+      </div>
+    </div>
+
+    <a href="home.html" class="t-sm muted">Skip for now →</a>
+  </header>
+
+  <!-- Main -->
+  <div class="onboard-main">
+
+    <!-- ── Form Column ── -->
+    <div class="onboard-form-col">
+
+      <!-- STEP 2: Profile -->
+      <div class="step-panel active" id="panel-2">
+        <div class="onboard-step-label">Step 2 of 3</div>
+        <h1 class="onboard-title">Set up your profile</h1>
+        <p class="onboard-sub">Tell people who you are. A complete profile gets 3× more connection requests.</p>
+
+        <div class="form-stack">
+          <!-- Avatar -->
+          <div class="avatar-picker">
+            <img src="https://ui-avatars.com/api/?name=Alex+M&background=333&color=eee&size=128" width="56" height="56" alt="avatar" style="border:2px solid var(--border)" />
+            <div class="avatar-picker-info">
+              <div class="avatar-picker-name">Profile photo</div>
+              <div class="avatar-picker-sub">Upload a photo or use your auto-generated avatar</div>
+              <div class="avatar-picker-actions">
+                <button class="btn btn-ghost btn-sm">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload
+                </button>
+                <button class="btn btn-ghost btn-sm">Generate</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Full name</label>
+            <input class="form-input" type="text" value="Alex Martinez" id="inp-name" oninput="updatePreview()" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bio <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+            <textarea class="form-input" rows="3" id="inp-bio" oninput="updatePreview()"
+              style="resize:vertical">Software developer from NYC. Love hiking, cooking, and Japanese culture!</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+              </span>
+              <input class="form-input" type="text" value="New York, USA" id="inp-loc" oninput="updatePreview()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="onboard-nav">
+          <button class="btn btn-outline" style="flex:1;justify-content:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back
+          </button>
+          <button class="btn btn-green" style="flex:2;justify-content:center" onclick="goStep(3)">
+            Continue
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Languages -->
+      <div class="step-panel" id="panel-3">
+        <div class="onboard-step-label">Step 3 of 3</div>
+        <h1 class="onboard-title">Your language goals</h1>
+        <p class="onboard-sub">Tell us what you speak and what you're learning. We'll find you the perfect partners.</p>
+
+        <div class="form-stack">
+          <div class="form-group">
+            <label class="form-label">I speak (native)</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </span>
+              <select class="form-input">
+                <option>🇺🇸 English</option>
+                <option>🇪🇸 Spanish</option>
+                <option>🇫🇷 French</option>
+                <option>🇩🇪 German</option>
+                <option>🇧🇷 Portuguese</option>
+                <option>🇮🇹 Italian</option>
+                <option>🇨🇳 Mandarin</option>
+                <option>🇯🇵 Japanese</option>
+                <option>🇰🇷 Korean</option>
+                <option>🇮🇳 Hindi</option>
+                <option>🇦🇪 Arabic</option>
+                <option>🇷🇺 Russian</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">I'm learning</label>
+            <div class="input-wrap">
+              <span class="input-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+              </span>
+              <select class="form-input">
+                <option>🇯🇵 Japanese</option>
+                <option>🇰🇷 Korean</option>
+                <option>🇪🇸 Spanish</option>
+                <option>🇫🇷 French</option>
+                <option>🇩🇪 German</option>
+                <option>🇧🇷 Portuguese</option>
+                <option>🇮🇹 Italian</option>
+                <option>🇨🇳 Mandarin</option>
+                <option>🇮🇳 Hindi</option>
+                <option>🇦🇪 Arabic</option>
+                <option>🇷🇺 Russian</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Proficiency level</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <button class="btn btn-ghost btn-sm level-btn" onclick="selectLevel(this)">Beginner</button>
+              <button class="btn btn-green btn-sm level-btn" onclick="selectLevel(this)">Elementary</button>
+              <button class="btn btn-ghost btn-sm level-btn" onclick="selectLevel(this)">Intermediate</button>
+              <button class="btn btn-ghost btn-sm level-btn" onclick="selectLevel(this)">Advanced</button>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px">
+            <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:8px">Your exchange preview</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="lang-pill">🇺🇸 English native</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span class="lang-pill green-pill">🇯🇵 Japanese learner</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="onboard-nav">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="goStep(2)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back
+          </button>
+          <button class="btn btn-green" style="flex:2;justify-content:center" onclick="window.location='home.html'">
+            Finish setup
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Preview Column ── -->
+    <div class="onboard-preview-col">
+      <div class="preview-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Profile preview
+      </div>
+
+      <div class="profile-preview">
+        <div class="pp-cover"></div>
+        <div class="pp-avatar-wrap">
+          <img src="https://ui-avatars.com/api/?name=Alex+M&background=333&color=eee&size=128" class="avatar"
+            width="48" height="48" alt="" style="border:3px solid var(--surface)" id="pp-avatar"/>
+        </div>
+        <div class="pp-body">
+          <div class="pp-name" id="pp-name">Alex Martinez</div>
+          <div class="pp-location">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="pp-loc">New York, USA</span>
+          </div>
+          <div class="pp-langs">
+            <span class="lang-pill">🇺🇸 English</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <span class="lang-pill green-pill">🇯🇵 Japanese</span>
+          </div>
+          <div class="pp-bio" id="pp-bio">Software developer from NYC. Love hiking, cooking, and Japanese culture!</div>
+          <div class="pp-stats">
+            <div class="pp-stat">
+              <div class="pp-stat-num">0</div>
+              <div class="pp-stat-label">Friends</div>
+            </div>
+            <div class="pp-stat">
+              <div class="pp-stat-num">0</div>
+              <div class="pp-stat-label">Chats</div>
+            </div>
+            <div class="pp-stat">
+              <div class="pp-stat-num">New</div>
+              <div class="pp-stat-label">Member</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+function updatePreview() {
+  const name = document.getElementById('inp-name').value || 'Your Name';
+  const bio = document.getElementById('inp-bio').value || 'Your bio will appear here...';
+  const loc = document.getElementById('inp-loc').value || 'Your location';
+  document.getElementById('pp-name').textContent = name;
+  document.getElementById('pp-bio').textContent = bio;
+  document.getElementById('pp-loc').textContent = loc;
+}
+
+function goStep(n) {
+  // hide all panels
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + n).classList.add('active');
+  // update step indicators
+  for (let i = 1; i <= 3; i++) {
+    const circle = document.getElementById('sc-' + i);
+    const name = document.getElementById('sn-' + i);
+    circle.className = 'step-circle';
+    name.className = 'step-name';
+    if (i < n) {
+      circle.classList.add('done');
+      circle.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else if (i === n) {
+      circle.classList.add('active');
+      circle.textContent = i;
+      name.classList.add('active');
+    } else {
+      circle.textContent = i;
+    }
+    if (i < 3) {
+      const line = document.getElementById('sl-' + i);
+      line.className = 'step-line' + (i < n ? ' done' : '');
+    }
+  }
+}
+
+function selectLevel(btn) {
+  document.querySelectorAll('.level-btn').forEach(b => {
+    b.className = 'btn btn-ghost btn-sm level-btn';
+  });
+  btn.className = 'btn btn-green btn-sm level-btn';
+}
+</script>
+</body>
+</html>
