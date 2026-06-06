@@ -20,8 +20,7 @@ const useAuth = () => {
   });
 
   const isAuthenticated = !!authUser;
-  // Check both field names since backend has a naming inconsistency
-  const isOnboarded = !!(authUser?.isOnboarded || authUser?.onBoarding || authUser?.nativeLanguage);
+  const isOnboarded = !!authUser?.isOnboarded;
 
   return { authUser, isLoading, isAuthenticated, isOnboarded };
 };

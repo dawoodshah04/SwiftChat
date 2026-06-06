@@ -11,7 +11,7 @@ const userSchema = mongoose.Schema(
     nativeLanguage: { type: String, default: "" },
     learningLanguage: { type: String, default: "" },
     location: { type: String, default: "" },
-    onBoarding: { type: Boolean, default: false },
+    isOnboarded: { type: Boolean, default: false },
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true },

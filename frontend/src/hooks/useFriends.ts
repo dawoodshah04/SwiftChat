@@ -48,8 +48,10 @@ export const useSendFriendRequest = () => {
     mutationFn: (userId: string) =>
       axiosInstance.post(`/users/friend-request/${userId}`),
     onSuccess: () => {
+      // Refresh all views that show request state
       queryClient.invalidateQueries({ queryKey: ['outgoingRequests'] });
       queryClient.invalidateQueries({ queryKey: ['recommendedUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
     },
   });
 };
@@ -60,8 +62,11 @@ export const useAcceptFriendRequest = () => {
     mutationFn: (requestId: string) =>
       axiosInstance.put(`/users/friend-request/${requestId}/accept`),
     onSuccess: () => {
+      // Refresh all views affected by acceptance
       queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
       queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['outgoingRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['recommendedUsers'] });
     },
   });
 };

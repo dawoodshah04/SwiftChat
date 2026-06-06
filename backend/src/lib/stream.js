@@ -25,6 +25,5 @@ export async function generateStreamToken(userId){
         return streamClient.createToken(userId.toString());
     } catch (error) {
         console.log(`Error in generateStreamToken ${error.message}`);
-        res.status(500).json({message:'Internal Server error'})
     }
 }
