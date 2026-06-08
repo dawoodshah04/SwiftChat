@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { User } from '../../types';
+import { useVideoClient } from '../../lib/videoContext';
+import useAuth from '../../hooks/useAuth';
 
 const IconPin = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -16,9 +19,9 @@ const IconMessage = () => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 );
-const IconProfile = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+const IconVideo = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
   </svg>
 );
 
@@ -26,8 +29,32 @@ interface Props { user: User }
 
 const FriendCard = ({ user }: Props) => {
   const navigate = useNavigate();
+  const videoClient = useVideoClient();
+  const { authUser } = useAuth();
+
   const avatarSrc = user.profilePic ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullname)}&background=2a2a2a&color=efefef&size=128`;
+
+  const initiateCall = async () => {
+    if (!videoClient || !authUser) {
+      toast.error('Video client not ready, please wait a moment');
+      return;
+    }
+    try {
+      const callId = [authUser._id, user._id].sort().join('_');
+      const call = videoClient.call('default', callId, { reuseInstance: true });
+      await call.getOrCreate({
+        ring: true,
+        data: {
+          members: [{ user_id: authUser._id }, { user_id: user._id }],
+        },
+      });
+      navigate(`/call/${callId}`);
+    } catch (err) {
+      console.error('Call initiation failed:', err);
+      toast.error('Failed to start call');
+    }
+  };
 
   return (
     <article className="user-card">
@@ -72,7 +99,15 @@ const FriendCard = ({ user }: Props) => {
         >
           <IconMessage /> Message
         </button>
-        <button className="btn-icon" title="Profile"><IconProfile /></button>
+        <button
+          className="btn-icon"
+          title={videoClient ? 'Start video call' : 'Video client initializing…'}
+          onClick={initiateCall}
+          disabled={!videoClient}
+          style={{ color: videoClient ? 'var(--green)' : 'var(--text-3)', width: 34, height: 34 }}
+        >
+          <IconVideo />
+        </button>
       </div>
     </article>
   );
