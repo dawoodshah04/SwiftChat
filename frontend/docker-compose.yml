@@ -1,0 +1,15 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # These are passed at build time and baked into the JS bundle.
+        # Set them in a .env file in this directory before running docker compose up.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_STREAM_API_KEY: ${VITE_STREAM_API_KEY}
+    image: swiftchat-frontend:latest
+    container_name: swiftchat-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"

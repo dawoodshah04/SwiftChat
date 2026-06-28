@@ -8,10 +8,15 @@ import userRoutes from '../src/routes/user.route.js'
 import chatRoutes from '../src/routes/chat.route.js'
 import { connectDB } from './lib/db.js';
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5001;
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(morgan('dev'));
@@ -22,6 +27,9 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes)
 app.use('/api/chat', chatRoutes)
+
+
+
 /*
 app.get('/api/auth/signup', (req, res)=>{
   res.send('Signup route');
@@ -37,9 +45,12 @@ app.get('/api/auth/logout', (req, res)=>{
 */
 
 
+const startServer = async () => {
+  await connectDB();
 
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  connectDB();
-});
+startServer();
