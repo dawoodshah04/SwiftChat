@@ -11,6 +11,7 @@ import type { User } from '../types';
 const useStreamVideo = (authUser: User | null | undefined) => {
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const clientRef = useRef<StreamVideoClient | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Still loading
@@ -21,6 +22,7 @@ const useStreamVideo = (authUser: User | null | undefined) => {
       if (clientRef.current) {
         clientRef.current.disconnectUser().catch(console.error);
         clientRef.current = null;
+        userIdRef.current = null;
       }
       setVideoClient(null);
       return;
@@ -30,7 +32,7 @@ const useStreamVideo = (authUser: User | null | undefined) => {
 
     const init = async () => {
       // Don't re-initialize if we already have the same user
-      if (clientRef.current?.userId === authUser._id) {
+      if (userIdRef.current === authUser._id) {
         return;
       }
 
@@ -58,6 +60,7 @@ const useStreamVideo = (authUser: User | null | undefined) => {
         });
 
         clientRef.current = client;
+        userIdRef.current = authUser._id;
         if (mounted) setVideoClient(client);
       } catch (err) {
         console.error('[StreamVideo] Failed to initialize:', err);
