@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy dependency manifests first (better layer caching)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copy the rest of the source code
 COPY . .
